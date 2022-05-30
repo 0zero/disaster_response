@@ -1,4 +1,8 @@
 import sys
+import numpy as np
+import pandas as pd
+from sqlalchemy import create_engine
+from pathlib import Path
 
 
 def load_data(messages_filepath, categories_filepath):
