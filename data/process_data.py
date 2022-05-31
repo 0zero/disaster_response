@@ -38,7 +38,9 @@ def load_data(messages_filepath, categories_filepath):
 
 def get_nan_columns(df):
     """
-        Return the column names where all their data is NaN from a dataframe
+     Return the column names where all their data is NaN from a dataframe
+    :param df:
+    :return: list of column names where all their data is NaN
     """
     nan_cols = []
     for col in df.columns:
@@ -70,6 +72,13 @@ def clean_data(df):
 
 
 def save_data(df, database_filename):
+    """
+
+    :param df:
+    :param database_filename:
+    :return: None
+    """
+    # TODO: add try-except statement here
     engine = create_engine(f"sqlite:///{database_filename}.db")
     df.to_sql('DisasterTweets', engine, index=False)
 
