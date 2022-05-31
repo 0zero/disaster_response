@@ -1,23 +1,103 @@
 import sys
+import pandas as pd
+import numpy as np
+from sqlalchemy import create_engine
+
+import re
+import nltk
+from nltk.tokenize import word_tokenize
+from nltk.stem import WordNetLemmatizer
+
+from sklearn.metrics import confusion_matrix, f1_score, classification_report
+from sklearn.model_selection import train_test_split, StratifiedShuffleSplit, GridSearchCV
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.multioutput import MultiOutputClassifier
+from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
+from sklearn.pipeline import Pipeline
+
+nltk.download(['punkt', 'wordnet', 'averaged_perceptron_tagger'])
 
 
 def load_data(database_filepath):
-    pass
+    """
+    :param database_filepath:
+    :return:
+    """
+    engine = create_engine(f"sqlite:///{database_filepath}")
+    df = pd.read_sql_table("InsertTableName", engine)
+
+    x = df.message.values
+    y = df[df.columns[4:]].values
+    category_names = df[df.columns[4:]].columns
+
+    return x, y, category_names
 
 
 def tokenize(text):
-    pass
+    """
+
+    :param text:
+    :return:
+    """
+    url_regex = 'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+'
+    detected_urls = re.findall(url_regex, text)
+    for url in detected_urls:
+        text = text.replace(url, "urlplaceholder")
+
+    tokens = word_tokenize(text)
+    lemmatizer = WordNetLemmatizer()
+
+    clean_tokens = []
+    for tok in tokens:
+        clean_tok = lemmatizer.lemmatize(tok).lower().strip()
+        clean_tokens.append(clean_tok)
+
+    return clean_tokens
 
 
 def build_model():
-    pass
+    """
+
+    :return:
+    """
+    pipeline = Pipeline([
+        ('vect', CountVectorizer(tokenizer=tokenize)),
+        ('tfidf', TfidfTransformer()),
+        ('clf', MultiOutputClassifier(RandomForestClassifier())),
+    ])
+
+    # specify parameters for grid search
+    parameters = {
+        'clf__estimator__min_samples_split': [2, 3, 4]
+    }
+
+    cv = GridSearchCV(pipeline, parameters)
+
+    return cv
 
 
 def evaluate_model(model, X_test, Y_test, category_names):
-    pass
+    """
+
+    :param model:
+    :param X_test:
+    :param Y_test:
+    :param category_names:
+    :return:
+    """
+    y_pred = model.predict(X_test)
+
+    for i, col in enumerate(category_names):
+        print(col, classification_report(Y_test[:, i], y_pred[:, i]))
 
 
 def save_model(model, model_filepath):
+    """
+
+    :param model:
+    :param model_filepath:
+    :return:
+    """
     pass
 
 
