@@ -1,7 +1,9 @@
 import sys
 import pandas as pd
 import numpy as np
+import pickle
 from sqlalchemy import create_engine
+from joblib import dump, load
 
 import re
 import nltk
@@ -15,8 +17,7 @@ from sklearn.multioutput import MultiOutputClassifier
 from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
 from sklearn.pipeline import Pipeline
 
-nltk.download(['punkt', 'wordnet', 'averaged_perceptron_tagger'])
-
+nltk.download(['punkt', 'wordnet', 'averaged_perceptron_tagger', 'omw-1.4'])
 
 def load_data(database_filepath):
     """
@@ -24,7 +25,7 @@ def load_data(database_filepath):
     :return:
     """
     engine = create_engine(f"sqlite:///{database_filepath}")
-    df = pd.read_sql_table("InsertTableName", engine)
+    df = pd.read_sql_table("DisasterTweets", engine)
 
     x = df.message.values
     y = df[df.columns[4:]].values
@@ -98,7 +99,7 @@ def save_model(model, model_filepath):
     :param model_filepath:
     :return:
     """
-    pass
+    dump(model, model_filepath)
 
 
 def main():

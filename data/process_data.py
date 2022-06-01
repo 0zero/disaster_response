@@ -79,7 +79,7 @@ def save_data(df, database_filename):
     :return: None
     """
     # TODO: add try-except statement here
-    engine = create_engine(f"sqlite:///{database_filename}.db")
+    engine = create_engine(f"sqlite:///{database_filename}")
     df.to_sql('DisasterTweets', engine, index=False)
 
 
