@@ -69,7 +69,6 @@ This will install various Python packages including `numpy`, `pandas`, `sklearn`
 3. Go to http://0.0.0.0:3001/
 
 4. Type in a message and see how well the classifier works.
-
 :information_source: The model saved in this repository is stored with [git lfs](https://git-lfs.github.com/) :information_source:
 ---
 
