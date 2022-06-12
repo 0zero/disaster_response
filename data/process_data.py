@@ -51,7 +51,7 @@ def get_nan_columns(df):
 
 def clean_data(df):
     """
-
+    Cleans data from given dataframe. Remove duplicates, drop some NaNs
     :param df: data frame from load_data function
     :return: same dataframe but with duplicates and NaNs removed
     """
@@ -73,7 +73,7 @@ def clean_data(df):
 
 def save_data(df, database_filename):
     """
-
+    Export data to sqlite database
     :param df:
     :param database_filename:
     :return: None
