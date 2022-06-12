@@ -25,12 +25,12 @@ parameters were:
 ### Data Exploration
 
 <figure>
-<img src="./plots/category_counts.png" alt="Where are You?" style="width:60%">
+<img src="./plots/category_counts.png" alt="Where are You?" style="width:100%">
 <figcaption align = "center"><b>Fig.1 - Counts of categories available in messages. </b></figcaption>
 </figure>
 
 <figure>
-<img src="./plots/category_correlation.png" alt="Where are You?" style="width:60%">
+<img src="./plots/category_correlation.png" alt="Where are You?" style="width:100%">
 <figcaption align = "center"><b>Fig.2 - Linear correlation between categories. </b></figcaption>
 </figure>
 
