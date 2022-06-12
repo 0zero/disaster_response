@@ -15,11 +15,11 @@ The labelled disaster tweets were provided by [Appen](https://appen.com/).
 I'm using a MultiOutputClassier with a Random Forest classifier. After performing a GridSearchCV the best
 parameters were:
 
-| Parameter Name  | Value  |
-|---|---|
-| max_depth  | 40  |
-| max_features  | auto  |
-| n_estimators  | 150  |
+| Parameter Name | Value |
+|----------------|-------|
+| max_depth      | 40    |
+| max_features   | auto  |
+| n_estimators   | 150   |
 
 
 ### Data Exploration
