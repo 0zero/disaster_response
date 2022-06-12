@@ -3,6 +3,7 @@ import pandas as pd
 
 from sqlalchemy import create_engine
 from joblib import dump, load
+from pathlib import Path
 
 import re
 import nltk
@@ -17,6 +18,8 @@ from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
 from sklearn.pipeline import Pipeline
 
 nltk.download(["punkt", "wordnet", "averaged_perceptron_tagger", "omw-1.4"])
+
+# TODO: Add logger
 
 
 def load_data(database_filepath: str):
@@ -116,25 +119,44 @@ def save_model(model, model_filepath):
 
 def main():
     if len(sys.argv) == 3:
+        # TODO: Add extra input so if model exists user can retrain and override model
+
         database_filepath, model_filepath = sys.argv[1:]
+
         print("Loading data...\n    DATABASE: {}".format(database_filepath))
         X, Y, category_names = load_data(database_filepath)
         X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.3, random_state=42)
-        
-        print("Building model...")
-        model = build_model()
-        
-        print("Training model...")
-        model.fit(X_train, Y_train)
-        print(f"Best parameters:\n {model.best_params_}")
+
+        if Path(model_filepath).exists():
+            print(
+                (
+                    f"WARNING: The given model filepath '{model_filepath}' already exists.\n"
+                    "So will just load the available model file instead of retraining."
+                )
+            )
+            model = load(model_filepath)
+        else:
+            print("Building model...")
+            model = build_model()
+
+            print("Training model...")
+            model.fit(X_train, Y_train)
+            print(f"Best parameters:\n {model.best_params_}")
 
         print("Evaluating model...")
         evaluate_model(model, X_test, Y_test, category_names)
 
-        print("Saving model...\n    MODEL: {}".format(model_filepath))
-        save_model(model, model_filepath)
-
-        print("Trained model saved!")
+        if Path(model_filepath).exists():
+            print(
+                (
+                    f"WARNING: The given model filepath '{model_filepath}' already exists.\n"
+                    "So will not be re-saving the model."
+                )
+            )
+        else:
+            print("Saving model...\n    MODEL: {}".format(model_filepath))
+            save_model(model, model_filepath)
+            print("Trained model saved!")
 
     else:
         print("Please provide the filepath of the disaster messages database "
