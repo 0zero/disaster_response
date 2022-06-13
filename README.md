@@ -71,6 +71,15 @@ This will install various Python packages including `numpy`, `pandas`, `sklearn`
 3. Go to http://0.0.0.0:3001/
 
 4. Type in a message and see how well the classifier works.
+
+### File descriptions
+Below we have a brief description of the directories and the files they contain. 
+- `app`: contains python and html code for running the webapp and some plotting routines
+- `data`: contains the initial input data files, the python ETL pipeline script, and the resulting sqlite database file
+- `models`: contains the ML pipeline scripts and functions to evaluate the model along with some stored models as pickle files
+- `plots`: contains some figures created by the plotting routines
+- `testing.ipynb`: notebook for used for scratch code
+
 ---
 
 <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc-sa/4.0/80x15.png" /></a><br />This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/">Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License</a>.
