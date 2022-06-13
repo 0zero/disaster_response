@@ -11,9 +11,23 @@ The labelled disaster tweets were provided by [Appen](https://appen.com/).
 
 ## Summary of Results
 
+### Data Exploration
+
+There are a total of 26207 messages in our dataset and they are labelled with one or multiple of 36 different 
+classes/labels. These classes along with their occurrence are shown in Fig.1.
+
+<figure>
+<img src="./plots/category_counts.png" alt="Where are You?" style="width:100%">
+<figcaption align = "center"><b>Fig.1 - Counts of categories available in messages. </b></figcaption>
+</figure>
+
+Straight off the bat we can see that there is significant imbalance in the message labels ranging from 
+$\sim$20,000, to a few 100 and even 0 for the **child_alone** label. This imbalance, if not handled properly, can 
+lead to a model incapable of providing accurate predictions. 
+
 ### Model metrics
-I'm using a MultiOutputClassier with a Random Forest classifier. After performing a GridSearchCV the best
-parameters were:
+The model used in this work is a `MultiOutputClassier` with a Random Forest classifier and after performing a 
+`GridSearchCV` the best parameters were:
 
 | Parameter Name | Value |
 |----------------|-------|
@@ -21,18 +35,9 @@ parameters were:
 | max_features   | auto  |
 | n_estimators   | 150   |
 
-
-### Data Exploration
-
-<figure>
-<img src="./plots/category_counts.png" alt="Where are You?" style="width:100%">
-<figcaption align = "center"><b>Fig.1 - Counts of categories available in messages. </b></figcaption>
-</figure>
-
-<figure>
-<img src="./plots/category_correlation.png" alt="Where are You?" style="width:100%">
-<figcaption align = "center"><b>Fig.2 - Linear correlation between categories. </b></figcaption>
-</figure>
+This model achieved a relatively high degree of accuracy (usually above 90%) for most message classes/labels. 
+However, this accuracy is misleading as it was often the case where the test dataset had few and even no samples 
+for particular labels. 
 
 ### Considerations, concerns, and improvements
 
@@ -41,7 +46,8 @@ parameters were:
 
 ### Environment Setup Instructions:
 
-I've used [Anaconda](https://www.anaconda.com/) with Python 3.9.2 to create the environment for this work. You can use the `requirement.yml` file to create the environment locally using:
+I've used [Anaconda](https://www.anaconda.com/) with Python 3.9.2 to create the environment for this work. You 
+can use the `requirement.yml` file to create the environment locally using:
 
 ```
 conda env create -f requirement.yml
@@ -52,7 +58,8 @@ You can then activate it with
 ```
 conda activate disaster_pipeline
 ```
-This will install various Python packages including `numpy`, `pandas`, `sklearn`, `plotly`, `flask` and their dependencies. 
+This will install various Python packages including `numpy`, `pandas`, `sklearn`, `plotly`, `flask` and their 
+dependencies. 
 
 ### Run Instructions:
 :information_source: The model saved in this repository is stored with [git lfs](https://git-lfs.github.com/) :information_source:
