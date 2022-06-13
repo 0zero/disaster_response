@@ -9,9 +9,7 @@ The stored model is then used in a `Flask` webapp which can be used to predict n
 
 The labelled disaster tweets were provided by [Appen](https://appen.com/).
 
-## Summary of Results
-
-### Data Exploration
+## Data Exploration
 
 There are a total of 26207 messages in our dataset and they are labelled with one or multiple of 36 different 
 classes/labels. These classes along with their occurrence are shown in Fig.1.
@@ -25,6 +23,7 @@ Straight off the bat we can see that there is significant imbalance in the messa
 $\sim$20,000, to a few 100 and even 0 for the **child_alone** label. This imbalance, if not handled properly, can 
 lead to a model incapable of providing accurate predictions. 
 
+## Results summary
 ### Model metrics
 The model used in this work is a `MultiOutputClassier` with a Random Forest classifier and after performing a 
 `GridSearchCV` the best parameters were:
@@ -36,11 +35,18 @@ The model used in this work is a `MultiOutputClassier` with a Random Forest clas
 | n_estimators   | 150   |
 
 This model achieved a relatively high degree of accuracy (usually above 90%) for most message classes/labels. 
-However, this accuracy is misleading as it was often the case where the test dataset had few and even no samples 
+However, this accuracy is misleading as it was often the case where the test dataset had few or even no samples 
 for particular labels. 
 
 ### Considerations, concerns, and improvements
+The biggest concern I have with this model is the actual split of the data used for training and testing of our model. 
+I've used _sk-learns_ `train_test_split` in order to create training and test datasets but this cannot guarantee that 
+we obtain a balanced representation of each label in our training and test sets. And, the obtained imbalance is evident 
+in our evaluation metrics and the inaccurate predictions obtained in the web app. 
 
+In order for this model to provide any value it must use a balanced training set. So for my first improvement I'd be 
+interested in looking at the multi-label classification library [scikit-multilearn](http://scikit.ml/) which is 
+specifically designed for such problems. 
 
 ## Using the model
 
