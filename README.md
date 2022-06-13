@@ -23,7 +23,7 @@ Straight off the bat we can see that there is significant imbalance in the messa
 $\sim$20,000, to a few 100 and even 0 for the **child_alone** label. This imbalance, if not handled properly, can 
 lead to a model incapable of providing accurate predictions. 
 
-## Results summary
+## Results Summary
 ### Model metrics
 The model used in this work is a `MultiOutputClassier` with a Random Forest classifier and after performing a 
 `GridSearchCV` the best parameters were:
@@ -40,7 +40,7 @@ for particular labels.
 
 ### Considerations, concerns, and improvements
 The biggest concern I have with this model is the actual split of the data used for training and testing of our model. 
-I've used _sk-learns_ `train_test_split` in order to create training and test datasets but this cannot guarantee that 
+I've used _sk-learn's_ `train_test_split` in order to create training and test datasets but this cannot guarantee that 
 we obtain a balanced representation of each label in our training and test sets. And, the obtained imbalance is evident 
 in our evaluation metrics and the inaccurate predictions obtained in the web app. 
 
