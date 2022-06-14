@@ -17,6 +17,7 @@ cryptography @ file:///tmp/build/80754af9/cryptography_1652101588893/work
 debugpy @ file:///tmp/build/80754af9/debugpy_1637091799509/work
 decorator @ file:///opt/conda/conda-bld/decorator_1643638310831/work
 defusedxml @ file:///tmp/build/80754af9/defusedxml_1615228127516/work
+dill @ file:///tmp/build/80754af9/dill_1623919422540/work
 entrypoints @ file:///tmp/build/80754af9/entrypoints_1649926439650/work
 executing @ file:///opt/conda/conda-bld/executing_1646925071911/work
 fastjsonschema @ file:///tmp/build/80754af9/python-fastjsonschema_1620414857593/work/dist

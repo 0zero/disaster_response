@@ -2,7 +2,6 @@ import sys
 import numpy as np
 import pandas as pd
 from sqlalchemy import create_engine
-from pathlib import Path
 
 NUMBER_OF_CATEGORIES = 36
 
@@ -68,6 +67,12 @@ def clean_data(df):
         cols = df.columns[len(df.columns)-NUMBER_OF_CATEGORIES:]
         df.dropna(axis=0, subset=cols, inplace=True)
 
+    # The related category has 3 options: 0,1,2 but we are supposed to have a binary setup
+    # We can either remove rows with related==2 or convert 2 -> 1. Ideally, we'd want to run
+    # both scenarios to check that there isn't a significant effect of doing either. Also, rows
+    # with related==2 are zero for every other category so I think it's safe to convert 2->1.
+    df[df.loc[:, "related"] == 2] = 1
+
     return df
 
 
@@ -80,7 +85,7 @@ def save_data(df, database_filename):
     """
     # TODO: add try-except statement here
     engine = create_engine(f"sqlite:///{database_filename}")
-    df.to_sql('DisasterTweets', engine, index=False)
+    df.to_sql('DisasterTweets', engine, index=False, if_exists="replace")
 
 
 def main():

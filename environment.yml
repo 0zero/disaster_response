@@ -27,6 +27,7 @@ dependencies:
   - debugpy=1.5.1=py39h295c915_0
   - decorator=5.1.1=pyhd3eb1b0_0
   - defusedxml=0.7.1=pyhd3eb1b0_0
+  - dill=0.3.4=pyhd3eb1b0_0
   - entrypoints=0.4=py39h06a4308_0
   - executing=0.8.3=pyhd3eb1b0_0
   - expat=2.4.4=h295c915_0

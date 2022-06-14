@@ -4,22 +4,49 @@ import pandas as pd
 from sqlalchemy import create_engine
 from joblib import dump, load
 from pathlib import Path
+import dill as pickle
 
 import re
 import nltk
 from nltk.tokenize import word_tokenize
 from nltk.stem import WordNetLemmatizer
+from nltk.corpus import stopwords
 
 from sklearn.metrics import classification_report, accuracy_score
 from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.multioutput import MultiOutputClassifier
 from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
-from sklearn.pipeline import Pipeline
+from sklearn.pipeline import Pipeline, FeatureUnion
+from sklearn.base import BaseEstimator, TransformerMixin
 
-nltk.download(["punkt", "wordnet", "averaged_perceptron_tagger", "omw-1.4"])
+from joblib.externals.loky import set_loky_pickler
+
+nltk.download(["punkt", "wordnet", "averaged_perceptron_tagger", "omw-1.4", "stopwords"])
+set_loky_pickler("dill")
 
 # TODO: Add logger
+
+
+class StartingVerbExtractor(BaseEstimator, TransformerMixin):
+
+    def starting_verb(self, text):
+        import nltk
+        sentence_list = nltk.sent_tokenize(text)
+        for sentence in sentence_list:
+            pos_tags = nltk.pos_tag(tokenize(sentence))
+            first_word, first_tag = pos_tags[0]
+            if first_tag in ['VB', 'VBP'] or first_word == 'RT':
+                return True
+        return False
+
+    def fit(self, x, y=None):
+        return self
+
+    def transform(self, X):
+        import pandas as pd
+        X_tagged = pd.Series(X).apply(self.starting_verb)
+        return pd.DataFrame(X_tagged)
 
 
 def load_data(database_filepath: str):
@@ -46,17 +73,22 @@ def tokenize(text: str):
     :param text: raw text input
     :return: cleaned text tokens
     """
+    # https://www.mackelab.org/sbi/faq/question_03/
+    import re
+    import nltk
+
     url_regex = "http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+"
     detected_urls = re.findall(url_regex, text)
     for url in detected_urls:
         text = text.replace(url, "urlplaceholder")
 
-    tokens = word_tokenize(text)
-    lemmatizer = WordNetLemmatizer()
+    tokens = nltk.word_tokenize(text.lower())
+    tokens = [w for w in tokens if w not in nltk.corpus.stopwords.words("english")]
+    lemmatizer = nltk.WordNetLemmatizer()
 
     clean_tokens = []
     for tok in tokens:
-        clean_tok = lemmatizer.lemmatize(tok).lower().strip()
+        clean_tok = lemmatizer.lemmatize(tok).strip()
         clean_tokens.append(clean_tok)
 
     return clean_tokens
@@ -69,23 +101,24 @@ def build_model():
     :return: model pipeline
     """
     pipeline = Pipeline([
-        ("vect", CountVectorizer(tokenizer=tokenize)),
-        ("tfidf", TfidfTransformer()),
+        ('features', FeatureUnion([
+            ('text_pipeline', Pipeline([
+                ('vect', CountVectorizer(tokenizer=tokenize)),
+                ('tfidf', TfidfTransformer())
+            ])),
+            ('starting_verb', StartingVerbExtractor())
+        ])),
         ("clf", MultiOutputClassifier(RandomForestClassifier())),
     ])
 
     # specify parameters for grid search
-    # parameters = {
-    #     "clf__estimator__n_estimators": [50, 100, 150],
-    #     "clf__estimator__criterion": ["gini", "entropy", "log_loss"],
-    #     "clf__estimator__min_samples_split": [2, 3, 4]
-    # }
     parameters = {
-        'clf__estimator__n_estimators': [i for i in range(50, 225, 25)],
-        'clf__estimator__max_depth': [10, 20, 30, 40, 50],
-        'clf__estimator__max_features': ['auto', 'sqrt', 'log2']
+        # "features__text_pipeline__vect__ngram_range": ((1, 1), (1, 2)),
+        "clf__estimator__n_estimators": [i for i in range(50, 225, 25)],
+        "clf__estimator__max_depth": [10, 20, 30, 40, 50],
+        "clf__estimator__max_features": ["auto", "sqrt", "log2"]
     }
-    cv = GridSearchCV(pipeline, parameters, n_jobs=6)
+    cv = GridSearchCV(pipeline, parameters, n_jobs=6, verbose=3)
 
     return cv
 
