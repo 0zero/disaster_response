@@ -2,9 +2,6 @@ import json
 import plotly
 import pandas as pd
 
-from nltk.stem import WordNetLemmatizer
-from nltk.tokenize import word_tokenize
-
 from flask import Flask
 from flask import render_template, request, jsonify
 from plotly.graph_objs import Bar
@@ -15,19 +12,6 @@ from app.plotting import plot_label_frequencies, plot_correlation_heatmap
 from models.train_classifier import tokenize, StartingVerbExtractor
 
 app = Flask(__name__)
-
-
-# def tokenize(text):
-#     tokens = word_tokenize(text)
-#     lemmatizer = WordNetLemmatizer()
-#
-#     clean_tokens = []
-#     for tok in tokens:
-#         clean_tok = lemmatizer.lemmatize(tok).lower().strip()
-#         clean_tokens.append(clean_tok)
-#
-#     return clean_tokens
-
 
 # load data
 engine = create_engine("sqlite:///../data/DisasterResponse.db")
