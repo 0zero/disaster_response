@@ -12,20 +12,21 @@ import joblib
 from sqlalchemy import create_engine
 
 from app.plotting import plot_label_frequencies, plot_correlation_heatmap
+from models.train_classifier import tokenize, StartingVerbExtractor
 
 app = Flask(__name__)
 
 
-def tokenize(text):
-    tokens = word_tokenize(text)
-    lemmatizer = WordNetLemmatizer()
-
-    clean_tokens = []
-    for tok in tokens:
-        clean_tok = lemmatizer.lemmatize(tok).lower().strip()
-        clean_tokens.append(clean_tok)
-
-    return clean_tokens
+# def tokenize(text):
+#     tokens = word_tokenize(text)
+#     lemmatizer = WordNetLemmatizer()
+#
+#     clean_tokens = []
+#     for tok in tokens:
+#         clean_tok = lemmatizer.lemmatize(tok).lower().strip()
+#         clean_tokens.append(clean_tok)
+#
+#     return clean_tokens
 
 
 # load data
@@ -33,7 +34,7 @@ engine = create_engine("sqlite:///../data/DisasterResponse.db")
 df = pd.read_sql_table("DisasterTweets", engine)
 
 # load model
-model = joblib.load("../models/classifierCV.pkl")
+model = joblib.load("../models/classifier.pkl")
 
 
 # index webpage displays cool visuals and receives user input text for model

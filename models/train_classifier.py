@@ -4,7 +4,7 @@ import pandas as pd
 from sqlalchemy import create_engine
 from joblib import dump, load
 from pathlib import Path
-import dill as pickle
+# import dill as pickle
 
 import re
 import nltk
@@ -20,31 +20,30 @@ from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
 from sklearn.pipeline import Pipeline, FeatureUnion
 from sklearn.base import BaseEstimator, TransformerMixin
 
-from joblib.externals.loky import set_loky_pickler
+# from joblib.externals.loky import set_loky_pickler
 
 nltk.download(["punkt", "wordnet", "averaged_perceptron_tagger", "omw-1.4", "stopwords"])
-set_loky_pickler("dill")
-
+# set_loky_pickler("dill")
+ENGLISH_STOPWORDS = stopwords.words("english")
 # TODO: Add logger
 
 
 class StartingVerbExtractor(BaseEstimator, TransformerMixin):
 
     def starting_verb(self, text):
-        import nltk
         sentence_list = nltk.sent_tokenize(text)
         for sentence in sentence_list:
             pos_tags = nltk.pos_tag(tokenize(sentence))
-            first_word, first_tag = pos_tags[0]
-            if first_tag in ['VB', 'VBP'] or first_word == 'RT':
-                return True
+            if len(pos_tags) >= 1:
+                first_word, first_tag = pos_tags[0]
+                if first_tag in ['VB', 'VBP'] or first_word == 'RT':
+                    return True
         return False
 
     def fit(self, x, y=None):
         return self
 
     def transform(self, X):
-        import pandas as pd
         X_tagged = pd.Series(X).apply(self.starting_verb)
         return pd.DataFrame(X_tagged)
 
@@ -74,17 +73,16 @@ def tokenize(text: str):
     :return: cleaned text tokens
     """
     # https://www.mackelab.org/sbi/faq/question_03/
-    import re
-    import nltk
+    # https://stackoverflow.com/questions/44911539/pickle-picklingerror-args0-from-newobj-args-has-the-wrong-class-with-hado
 
     url_regex = "http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+"
     detected_urls = re.findall(url_regex, text)
     for url in detected_urls:
         text = text.replace(url, "urlplaceholder")
 
-    tokens = nltk.word_tokenize(text.lower())
-    tokens = [w for w in tokens if w not in nltk.corpus.stopwords.words("english")]
-    lemmatizer = nltk.WordNetLemmatizer()
+    tokens = word_tokenize(text.lower())
+    tokens = [w for w in tokens if w not in ENGLISH_STOPWORDS]
+    lemmatizer = WordNetLemmatizer()
 
     clean_tokens = []
     for tok in tokens:

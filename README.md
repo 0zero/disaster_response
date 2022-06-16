@@ -1,8 +1,11 @@
 # Disaster Response Pipeline Project
 
 ## Project Brief
-Build a multi-label classification model that can classifies messages/tweets sent during disasters. The repository
-should demonstrate data engineering skills by building an ETL pipeline and then using the cleaned data in an ML 
+Build a multi-label classification model that can classifies messages/tweets sent during disasters. By automatically 
+classifying tweets and messages related to various disaster into various categories it will allow for various 
+affected communities and relief and rescue organisations to save time and discern where and when help is needed.
+
+The repository should demonstrate data engineering skills by building an ETL pipeline and then using the cleaned data in an ML 
 pipeline creating a classification model. 
 
 The stored model is then used in a `Flask` webapp which can be used to predict new messages provided by users.
@@ -30,9 +33,9 @@ The model used in this work is a `MultiOutputClassier` with a Random Forest clas
 
 | Parameter Name | Value |
 |----------------|-------|
-| max_depth      | 40    |
+| max_depth      | 20    |
 | max_features   | auto  |
-| n_estimators   | 150   |
+| n_estimators   | 175   |
 
 This model achieved a relatively high degree of accuracy (usually above 90%) for most message classes/labels. 
 However, this accuracy is misleading as it was often the case where the test dataset had few or even no samples 
@@ -87,10 +90,29 @@ dependencies.
 
 ### File descriptions
 Below we have a brief description of the directories and the files they contain. 
-- `app`: contains python and html code for running the webapp and some plotting routines
-- `data`: contains the initial input data files, the python ETL pipeline script, and the resulting sqlite database file
-- `models`: contains the ML pipeline scripts and functions to evaluate the model along with some stored models as pickle files
-- `plots`: contains some figures created by the plotting routines
+- `app` <br>
+  &nbsp;| - `template` <br>
+  &nbsp;| --- `master.html`: main page of web app <br>
+  &nbsp;| --- `go.html`: classification result page of web app <br>
+  &nbsp;| - `plotting.py`: contains plotly plot script for webapp <br>
+  &nbsp;| - `run.py`: Flask file that runs app <br>
+- `data` <br>
+  &nbsp;| - `disaster_categories.csv`: data to process <br>
+  &nbsp;| - `disaster_messages.csv`: data to process <br>
+  &nbsp;| - `process_data.py`: ETL script <br>
+  &nbsp;| - `DisasterResponse.db`: database containing cleaned data <br>
+- `models` <br>
+  &nbsp;| - `train_classifier.py`: ML pipeline script <br>
+  &nbsp;| - `classifier.pkl`: enhanced saved model with extra features <br>
+  &nbsp;| - `classifierCV.pkl`: original saved model <br>
+- `plots` <br>
+  &nbsp;| - `category_correlation.png`: plot of correlation between each category <br>
+  &nbsp;| - `category_counts.png`: plot of counts in each category <br>
+- `README.md`: readme file
+- `.gitattributes`: contains files managed by git-lfs
+- `.gitignore`: file/folders to ignore
+- `environment.yml`: anaconda python environment export
+- `requirements.txt`: pip python environment export
 - `testing.ipynb`: notebook for used for scratch code
 
 ---
