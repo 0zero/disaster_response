@@ -9,7 +9,7 @@ import joblib
 from sqlalchemy import create_engine
 
 from app.plotting import plot_label_frequencies, plot_correlation_heatmap
-from models.train_classifier import tokenize, StartingVerbExtractor
+from models.train_classifier import tokenize, StartingVerbExtractor, WordCount, VerbCount, NounCount, CharacterCount
 
 app = Flask(__name__)
 
@@ -18,7 +18,7 @@ engine = create_engine("sqlite:///../data/DisasterResponse.db")
 df = pd.read_sql_table("DisasterTweets", engine)
 
 # load model
-model = joblib.load("../models/classifier.pkl")
+model = joblib.load("../models/classifierUpdatedFeatures.pkl")
 
 
 # index webpage displays cool visuals and receives user input text for model

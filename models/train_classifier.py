@@ -1,22 +1,23 @@
 import sys
+from string import punctuation
+
 import pandas as pd
 
 from sqlalchemy import create_engine
 from joblib import dump, load
 from pathlib import Path
-# import dill as pickle
 
 import re
 import nltk
-from nltk.tokenize import word_tokenize
-from nltk.stem import WordNetLemmatizer
+from nltk.tokenize import word_tokenize, sent_tokenize
+from nltk.stem import WordNetLemmatizer, PorterStemmer
 from nltk.corpus import stopwords
 
-from sklearn.metrics import classification_report, accuracy_score
+from sklearn.metrics import classification_report, accuracy_score, make_scorer, f1_score
 from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.multioutput import MultiOutputClassifier
-from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
+from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.pipeline import Pipeline, FeatureUnion
 from sklearn.base import BaseEstimator, TransformerMixin
 
@@ -26,6 +27,96 @@ nltk.download(["punkt", "wordnet", "averaged_perceptron_tagger", "omw-1.4", "sto
 # set_loky_pickler("dill")
 ENGLISH_STOPWORDS = stopwords.words("english")
 # TODO: Add logger
+
+
+class WordCount(BaseEstimator, TransformerMixin):
+    '''
+    Custom scikit-learn transformer to count the number of words in text.
+    credit: https://github.com/rebeccaebarnes/DSND-Project-5/blob/master/scripts/train_classifier.py
+    '''
+
+    def word_count(self, text):
+        table = text.maketrans(dict.fromkeys(punctuation))
+        words = word_tokenize(text.lower().strip().translate(table))
+        return len(words)
+
+    def fit(self, x, y=None):
+        return self
+
+    def transform(self, x):
+        count = pd.Series(x).apply(self.word_count)
+        return pd.DataFrame(count)
+
+
+class CharacterCount(BaseEstimator, TransformerMixin):
+    '''
+    Custom scikit-learn transformer to count the number of characters in text,
+    including spaces and punctuation.
+    credit: https://github.com/rebeccaebarnes/DSND-Project-5/blob/master/scripts/train_classifier.py
+    '''
+
+    def character_count(self, text):
+        return len(text)
+
+    def fit(self, x, y=None):
+        return self
+
+    def transform(self, x):
+        count = pd.Series(x).apply(self.character_count)
+        return pd.DataFrame(count)
+
+
+class NounCount(BaseEstimator, TransformerMixin):
+    '''
+    Custom scikit-learn transformer to count the number of nouns in text after
+    tokenization including removal of stop words, lemmatization of nouns and
+    verbs, and stemming, using nltk's WordNetLemmatizer and PorterStemmer.
+    credit: https://github.com/rebeccaebarnes/DSND-Project-5/blob/master/scripts/train_classifier.py
+    '''
+
+    def noun_count(self, text):
+        count = 0
+        sentence_list = sent_tokenize(text)
+        for sentence in sentence_list:
+            pos_tags = nltk.pos_tag(tokenize(sentence))
+            for _, tag in pos_tags:
+                if tag in ['PRP', 'NN']:
+                    count += 1
+
+        return count
+
+    def fit(self, x, y=None):
+        return self
+
+    def transform(self, x):
+        count = pd.Series(x).apply(self.noun_count)
+        return pd.DataFrame(count)
+
+
+class VerbCount(BaseEstimator, TransformerMixin):
+    '''
+    Custom scikit-learn transformer to count the number of nouns in text after
+    tokenization using a custom "tokenize" function.
+    credit: https://github.com/rebeccaebarnes/DSND-Project-5/blob/master/scripts/train_classifier.py
+    '''
+
+    def verb_count(self, text):
+        count = 0
+        sentence_list = sent_tokenize(text)
+        for sentence in sentence_list:
+            pos_tags = nltk.pos_tag(tokenize(sentence))
+            for _, tag in pos_tags:
+                if tag in ['VB', 'VBP']:
+                    count += 1
+
+        return count
+
+    def fit(self, x, y=None):
+        return self
+
+    def transform(self, x):
+        count = pd.Series(x).apply(self.verb_count)
+        return pd.DataFrame(count)
 
 
 class StartingVerbExtractor(BaseEstimator, TransformerMixin):
@@ -80,14 +171,19 @@ def tokenize(text: str):
     for url in detected_urls:
         text = text.replace(url, "urlplaceholder")
 
-    tokens = word_tokenize(text.lower())
+    table = text.maketrans(dict.fromkeys(punctuation))
+
+    tokens = word_tokenize(text.lower().strip().translate(table))
     tokens = [w for w in tokens if w not in ENGLISH_STOPWORDS]
     lemmatizer = WordNetLemmatizer()
+    stemmer = PorterStemmer()
 
     clean_tokens = []
     for tok in tokens:
-        clean_tok = lemmatizer.lemmatize(tok).strip()
-        clean_tokens.append(clean_tok)
+        clean_tok = lemmatizer.lemmatize(tok)
+        lemmed = lemmatizer.lemmatize(clean_tok, pos='v')
+        stemmed = stemmer.stem(lemmed)
+        clean_tokens.append(stemmed)
 
     return clean_tokens
 
@@ -100,23 +196,29 @@ def build_model():
     """
     pipeline = Pipeline([
         ('features', FeatureUnion([
-            ('text_pipeline', Pipeline([
-                ('vect', CountVectorizer(tokenizer=tokenize)),
-                ('tfidf', TfidfTransformer())
-            ])),
-            ('starting_verb', StartingVerbExtractor())
+            ("text", TfidfVectorizer(
+                tokenizer=tokenize, max_df=0.5,
+                max_features=5000, ngram_range=(1, 2),
+                use_idf=False)),
+            ('starting_verb', StartingVerbExtractor()),
+            ("word_count", WordCount()),
+            ("character_count", CharacterCount()),
+            ("noun_count", NounCount()),
+            ("verb_count", VerbCount())
         ])),
         ("clf", MultiOutputClassifier(RandomForestClassifier())),
     ])
 
     # specify parameters for grid search
     parameters = {
-        # "features__text_pipeline__vect__ngram_range": ((1, 1), (1, 2)),
-        "clf__estimator__n_estimators": [i for i in range(50, 225, 25)],
-        "clf__estimator__max_depth": [10, 20, 30, 40, 50],
-        "clf__estimator__max_features": ["auto", "sqrt", "log2"]
+        "clf__estimator__n_estimators": [i for i in range(50, 350, 50)],
+        "clf__estimator__max_depth": [10, 100, 200, 300, 400, 500],
+        # "clf__estimator__max_features": ["auto", "sqrt", "log2"]
     }
-    cv = GridSearchCV(pipeline, parameters, n_jobs=6, verbose=3)
+
+    scorer = make_scorer(f1_score, average='micro')
+
+    cv = GridSearchCV(pipeline, parameters, n_jobs=8, verbose=3, scoring=scorer)
 
     return cv
 
@@ -156,7 +258,7 @@ def main():
 
         print("Loading data...\n    DATABASE: {}".format(database_filepath))
         X, Y, category_names = load_data(database_filepath)
-        X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.3, random_state=42)
+        X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.2, random_state=42)
 
         if Path(model_filepath).exists():
             print(

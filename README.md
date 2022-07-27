@@ -33,9 +33,9 @@ The model used in this work is a `MultiOutputClassier` with a Random Forest clas
 
 | Parameter Name | Value |
 |----------------|-------|
-| max_depth      | 20    |
+| max_depth      | 200   |
 | max_features   | auto  |
-| n_estimators   | 175   |
+| n_estimators   | 50    |
 
 This model achieved a relatively high degree of accuracy (usually above 90%) for most message classes/labels. 
 However, this accuracy is misleading as it was often the case where the test dataset had few or even no samples 
